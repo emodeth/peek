@@ -10,6 +10,15 @@ const POPUP_GAP = 8;
 const GITHUB_PULLS_URL = "https://github.com/pulls";
 
 let initialization: Promise<void> | null = null;
+let focusLossTimer: ReturnType<typeof setTimeout> | null = null;
+let isTrayLeftButtonDown = false;
+
+function cancelFocusLossHide() {
+  if (focusLossTimer === null) return;
+
+  clearTimeout(focusLossTimer);
+  focusLossTimer = null;
+}
 
 function clamp(value: number, minimum: number, maximum: number) {
   return Math.max(minimum, Math.min(value, maximum));
@@ -49,13 +58,20 @@ async function positionPopupNearTray(trayRect: TrayIconEvent["rect"]) {
 }
 
 async function togglePopup(event: TrayIconEvent) {
-  if (
-    event.type !== "Click" ||
-    event.button !== "Left" ||
-    event.buttonState !== "Up"
-  ) {
+  if (event.type !== "Click" || event.button !== "Left") {
     return;
   }
+
+  if (event.buttonState === "Down") {
+    isTrayLeftButtonDown = true;
+    cancelFocusLossHide();
+    return;
+  }
+
+  if (event.buttonState !== "Up") return;
+
+  isTrayLeftButtonDown = false;
+  cancelFocusLossHide();
 
   const popupWindow = getCurrentWindow();
 
@@ -78,7 +94,16 @@ async function setupNativeShell() {
   await popupWindow.setSkipTaskbar(true);
 
   await popupWindow.onFocusChanged(({ payload: isFocused }) => {
-    if (!isFocused) void popupWindow.hide();
+    cancelFocusLossHide();
+
+    if (isFocused || isTrayLeftButtonDown) return;
+
+    // Windows moves focus away from the popup before delivering the tray click.
+    // Defer the hide so that click can cancel it and perform the toggle itself.
+    focusLossTimer = setTimeout(() => {
+      focusLossTimer = null;
+      if (!isTrayLeftButtonDown) void popupWindow.hide();
+    }, 150);
   });
 
   await popupWindow.onCloseRequested((event) => {
