@@ -3,8 +3,14 @@ import { PhysicalPosition } from "@tauri-apps/api/dpi";
 import { emit } from "@tauri-apps/api/event";
 import { Menu } from "@tauri-apps/api/menu";
 import { TrayIcon, type TrayIconEvent } from "@tauri-apps/api/tray";
-import { availableMonitors, getCurrentWindow } from "@tauri-apps/api/window";
+import {
+  availableMonitors,
+  getCurrentWindow,
+  type Theme,
+} from "@tauri-apps/api/window";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import darkModeIconUrl from "../../src-tauri/icons/icon-dark.png?inline";
+import lightModeIconUrl from "../../src-tauri/icons/icon-light.png?inline";
 
 const POPUP_GAP = 8;
 const GITHUB_PULLS_URL = "https://github.com/pulls";
@@ -12,6 +18,22 @@ const GITHUB_PULLS_URL = "https://github.com/pulls";
 let initialization: Promise<void> | null = null;
 let focusLossTimer: ReturnType<typeof setTimeout> | null = null;
 let isTrayLeftButtonDown = false;
+
+function decodeDataUrl(dataUrl: string) {
+  const encodedBytes = dataUrl.slice(dataUrl.indexOf(",") + 1);
+  const binary = window.atob(encodedBytes);
+
+  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+}
+
+const trayIconBytes = {
+  light: decodeDataUrl(lightModeIconUrl),
+  dark: decodeDataUrl(darkModeIconUrl),
+};
+
+function getTrayIcon(theme: Theme) {
+  return trayIconBytes[theme];
+}
 
 function cancelFocusLossHide() {
   if (focusLossTimer === null) return;
@@ -128,16 +150,34 @@ async function setupNativeShell() {
     ],
   });
 
-  const icon = await defaultWindowIcon();
+  const fallbackIcon = await defaultWindowIcon();
 
-  await TrayIcon.new({
+  const tray = await TrayIcon.new({
     id: "peek",
-    icon: icon ?? undefined,
+    icon: fallbackIcon ?? undefined,
     menu,
     showMenuOnLeftClick: false,
     tooltip: "Peek",
     action: (event) => void togglePopup(event),
   });
+
+  try {
+    const initialTheme =
+      (await popupWindow.theme()) ??
+      (window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light");
+
+    await tray.setIcon(getTrayIcon(initialTheme));
+
+    await popupWindow.onThemeChanged(({ payload: theme }) => {
+      void tray.setIcon(getTrayIcon(theme)).catch((error: unknown) => {
+        console.error("Could not update the tray icon theme.", error);
+      });
+    });
+  } catch (error) {
+    console.error("Could not apply the themed tray icon.", error);
+  }
 }
 
 export function initializeNativeShell() {

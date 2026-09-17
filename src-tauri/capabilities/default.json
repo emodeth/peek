@@ -8,6 +8,7 @@
     "core:event:default",
     "core:menu:allow-new",
     "core:tray:allow-new",
+    "core:tray:allow-set-icon",
     "core:window:allow-available-monitors",
     "core:window:allow-hide",
     "core:window:allow-is-visible",
@@ -16,6 +17,7 @@
     "core:window:allow-set-position",
     "core:window:allow-set-skip-taskbar",
     "core:window:allow-show",
+    "core:window:allow-theme",
     {
       "identifier": "opener:allow-open-url",
       "allow": [{ "url": "https://github.com/pulls" }]
