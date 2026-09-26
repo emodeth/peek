@@ -19,8 +19,20 @@
     "core:window:allow-show",
     "core:window:allow-theme",
     {
+      "identifier": "http:default",
+      "allow": [
+        { "url": "https://github.com/login/device/code" },
+        { "url": "https://github.com/login/oauth/access_token" },
+        { "url": "https://api.github.com/graphql" }
+      ]
+    },
+    {
       "identifier": "opener:allow-open-url",
-      "allow": [{ "url": "https://github.com/pulls" }]
+      "allow": [
+        { "url": "https://github.com/login/device" },
+        { "url": "https://github.com/pulls" },
+        { "url": "https://github.com/*/*/pull/*" }
+      ]
     }
   ]
 }
