@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="src-tauri/icons/128x128.png" width="96" height="96" alt="Peek logo">
+  <img src="src-tauri/icons/icon-dark.png" width="96" height="96" alt="Peek logo">
 </p>
 
 <h1 align="center">Peek</h1>
 
 <p align="center">
-  Your GitHub pull requests, one click away from the Windows tray.
+  Have a peek at your PRs!
 </p>
 
 <p align="center">
@@ -104,6 +104,22 @@ corepack pnpm tauri build
 ```
 
 The NSIS installer is written to `src-tauri/target/release/bundle/nsis/`.
+
+### Publish a downloadable release
+
+The release workflow builds the Windows installer and uploads it to GitHub Releases whenever a version tag is pushed. Before publishing for the first time:
+
+1. Open the repository's **Settings -> Secrets and variables -> Actions -> Variables** page.
+2. Add a repository variable named `VITE_GITHUB_CLIENT_ID` containing the public client ID of the GitHub OAuth App.
+3. Make sure the version in `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml` is the version you want to publish.
+4. Commit and push the version change, then create and push a matching tag:
+
+```powershell
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+GitHub Actions will create the release and attach the `.exe` installer. Follow its progress on the repository's **Actions** tab; after it completes, the README's download link will resolve to that release.
 
 ## Architecture
 
