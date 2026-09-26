@@ -1,16 +1,27 @@
-export type PullRequestStatusTone = "success" | "pending" | "danger";
+export type ReviewDecision =
+  | "APPROVED"
+  | "CHANGES_REQUESTED"
+  | "REVIEW_REQUIRED"
+  | null;
 
-export type PullRequest = {
+export type CheckStatus = "SUCCESS" | "FAILURE" | "PENDING" | "UNKNOWN";
+
+export interface PullRequest {
   id: string;
-  repository: string;
   number: number;
+  repository: {
+    owner: string;
+    name: string;
+  };
   title: string;
-  statusTone: PullRequestStatusTone;
-};
+  url: string;
+  isDraft: boolean;
+  reviewDecision: ReviewDecision;
+  checks: CheckStatus;
+  updatedAt: string;
+}
 
-export type PullRequestGroup = {
-  id: string;
-  title: string;
-  pullRequests: PullRequest[];
-  canCopy?: boolean;
-};
+export interface PullRequestData {
+  reviewRequested: PullRequest[];
+  authored: PullRequest[];
+}
