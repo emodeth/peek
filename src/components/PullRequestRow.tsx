@@ -5,7 +5,7 @@ import { StatusMark } from "./StatusMark";
 type PullRequestRowProps = { pullRequest: PullRequest };
 
 function relativeTime(updatedAt: string): string {
-  const formatter = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+  const formatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
   const minutes = Math.round((Date.parse(updatedAt) - Date.now()) / 60_000);
   if (Math.abs(minutes) < 60) return formatter.format(minutes, "minute");
   const hours = Math.round(minutes / 60);

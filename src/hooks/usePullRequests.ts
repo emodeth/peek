@@ -38,7 +38,7 @@ export function usePullRequests(authStatus: AuthStatus): PullRequestState {
     } catch (refreshError) {
       const githubError = asGitHubError(refreshError);
       const resetMessage = githubError.resetAt
-        ? ` Try again after ${githubError.resetAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.`
+        ? ` Try again after ${githubError.resetAt.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit" })}.`
         : "";
       setError(`${githubError.message}${resetMessage}`);
     } finally {
