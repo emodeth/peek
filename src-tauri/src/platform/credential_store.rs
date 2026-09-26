@@ -1,17 +1,21 @@
-use keyring_core::{Entry, Error};
+use keyring_core::{Entry, Error, Result as KeyringResult};
 
 const SERVICE: &str = "dev.emode.peek";
 const ACCOUNT: &str = "github-oauth";
+
+/// Installs the Windows Credential Manager implementation before any entries are used.
+pub(crate) fn initialize() -> KeyringResult<()> {
+    let store = windows_native_keyring_store::Store::new()?;
+    keyring_core::set_default_store(store);
+    Ok(())
+}
 
 fn entry() -> Result<Entry, String> {
     Entry::new(SERVICE, ACCOUNT)
         .map_err(|_| "Could not access Windows Credential Manager.".to_string())
 }
 
-// Rust deliberately treats this value as opaque. OAuth parsing and refresh
-// behavior belong to the TypeScript authentication module.
-#[tauri::command]
-pub fn get_github_credentials() -> Result<Option<String>, String> {
+pub(crate) fn get() -> Result<Option<String>, String> {
     match entry()?.get_password() {
         Ok(credentials) => Ok(Some(credentials)),
         Err(Error::NoEntry) => Ok(None),
@@ -19,15 +23,13 @@ pub fn get_github_credentials() -> Result<Option<String>, String> {
     }
 }
 
-#[tauri::command]
-pub fn set_github_credentials(credentials: String) -> Result<(), String> {
+pub(crate) fn set(credentials: &str) -> Result<(), String> {
     entry()?
-        .set_password(&credentials)
+        .set_password(credentials)
         .map_err(|_| "Could not save GitHub credentials.".to_string())
 }
 
-#[tauri::command]
-pub fn delete_github_credentials() -> Result<(), String> {
+pub(crate) fn delete() -> Result<(), String> {
     match entry()?.delete_credential() {
         Ok(()) | Err(Error::NoEntry) => Ok(()),
         Err(_) => Err("Could not delete GitHub credentials.".to_string()),
