@@ -1,22 +1,15 @@
-import type { PullRequestStatusTone } from "../types/pullRequest";
+import type { CheckStatus } from "../types/pullRequest";
 import { CheckCircleIcon, PendingIcon, XCircleIcon } from "./icons";
 
-type StatusMarkProps = {
-  tone: PullRequestStatusTone;
-};
+type StatusMarkProps = { status: CheckStatus };
 
-export function StatusMark({ tone }: StatusMarkProps) {
+export function StatusMark({ status }: StatusMarkProps) {
+  const tone = status === "SUCCESS" ? "success" : status === "FAILURE" ? "danger" : "pending";
   return (
-    <span className={`status-mark status-mark--${tone}`} aria-hidden="true">
-      {tone === "success" && (
-        <CheckCircleIcon />
-      )}
-      {tone === "danger" && (
-        <XCircleIcon />
-      )}
-      {tone === "pending" && (
-        <PendingIcon />
-      )}
+    <span className={`status-mark status-mark--${tone}`} aria-label={`Checks: ${status.toLowerCase()}`}>
+      {tone === "success" && <CheckCircleIcon />}
+      {tone === "danger" && <XCircleIcon />}
+      {tone === "pending" && <PendingIcon />}
     </span>
   );
 }

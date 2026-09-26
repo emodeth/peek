@@ -15,7 +15,7 @@
         "label": "main",
         "title": "Peek",
         "width": 480,
-        "height": 328,
+        "height": 380,
         "visible": false,
         "decorations": false,
         "resizable": false,

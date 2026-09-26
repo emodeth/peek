@@ -1,29 +1,27 @@
-import type { PullRequestGroup } from "../types/pullRequest";
-import { CopyIcon } from "./icons";
+import type { PullRequest } from "../types/pullRequest";
 import { PullRequestRow } from "./PullRequestRow";
 
 type PullRequestSectionProps = {
-  group: PullRequestGroup;
-  copied: boolean;
-  onCopy: (groupId: string) => void;
+  title: string;
+  pullRequests: PullRequest[];
+  emptyMessage: string;
 };
 
-export function PullRequestSection({ group, copied, onCopy }: PullRequestSectionProps) {
+export function PullRequestSection({ title, pullRequests, emptyMessage }: PullRequestSectionProps) {
   return (
     <section className="pr-section">
       <div className="section-heading">
-        <h2>{group.title}</h2>
-        {group.canCopy && (
-          <button className="copy-button" type="button" onClick={() => onCopy(group.id)}>
-            <CopyIcon />
-            {copied ? "Copied" : "Copy for Slack"}
-          </button>
-        )}
+        <h2>{title}</h2>
+        <span className="section-count">{pullRequests.length}</span>
       </div>
       <div className="section-rows">
-        {group.pullRequests.map((pullRequest) => (
-          <PullRequestRow key={pullRequest.id} pullRequest={pullRequest} />
-        ))}
+        {pullRequests.length === 0 ? (
+          <p className="section-empty">{emptyMessage}</p>
+        ) : (
+          pullRequests.map((pullRequest) => (
+            <PullRequestRow key={pullRequest.id} pullRequest={pullRequest} />
+          ))
+        )}
       </div>
     </section>
   );
