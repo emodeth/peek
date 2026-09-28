@@ -12,6 +12,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function rateLimitReset(response: Response): Date | undefined {
+  const retryAfter = response.headers.get("retry-after");
+  if (retryAfter) {
+    const seconds = Number(retryAfter);
+    if (Number.isFinite(seconds) && seconds >= 0) return new Date(Date.now() + seconds * 1_000);
+
+    const date = new Date(retryAfter);
+    if (!Number.isNaN(date.getTime())) return date;
+  }
+
   const reset = Number(response.headers.get("x-ratelimit-reset"));
   return Number.isFinite(reset) && reset > 0 ? new Date(reset * 1_000) : undefined;
 }

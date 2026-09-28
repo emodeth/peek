@@ -68,6 +68,7 @@ export default function App() {
 
       <PopupFooter
         isRefreshing={pullRequests.refreshing}
+        lastUpdated={pullRequests.lastUpdated}
         onRefresh={() => void pullRequests.refresh()}
         username={auth.username ?? "github"}
         onSignOut={() => void auth.signOut()}

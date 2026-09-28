@@ -4,13 +4,18 @@ import { StatusMark } from "./StatusMark";
 
 type PullRequestRowProps = { pullRequest: PullRequest };
 
+function sentenceCase(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 function relativeTime(updatedAt: string): string {
   const formatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
   const minutes = Math.round((Date.parse(updatedAt) - Date.now()) / 60_000);
-  if (Math.abs(minutes) < 60) return formatter.format(minutes, "minute");
+  if (minutes === 0) return "Just now";
+  if (Math.abs(minutes) < 60) return sentenceCase(formatter.format(minutes, "minute"));
   const hours = Math.round(minutes / 60);
-  if (Math.abs(hours) < 24) return formatter.format(hours, "hour");
-  return formatter.format(Math.round(hours / 24), "day");
+  if (Math.abs(hours) < 24) return sentenceCase(formatter.format(hours, "hour"));
+  return sentenceCase(formatter.format(Math.round(hours / 24), "day"));
 }
 
 export function PullRequestRow({ pullRequest }: PullRequestRowProps) {

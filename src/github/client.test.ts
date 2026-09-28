@@ -47,6 +47,19 @@ describe("fetchPullRequests", () => {
     await expect(fetchPullRequests()).rejects.toMatchObject({ kind: "rate-limit" });
   });
 
+  it("uses Retry-After when GitHub rate-limits a request", async () => {
+    authenticatedFetch.mockResolvedValue(response({}, 429, { "retry-after": "120" }));
+    const beforeRequest = Date.now();
+    const result = fetchPullRequests();
+    await expect(result).rejects.toMatchObject({ kind: "rate-limit" });
+    await result.catch((error: unknown) => {
+      expect(error).toMatchObject({
+        resetAt: expect.any(Date),
+      });
+      expect((error as { resetAt: Date }).resetAt.getTime()).toBeGreaterThanOrEqual(beforeRequest + 120_000);
+    });
+  });
+
   it("rejects GraphQL errors and malformed responses", async () => {
     authenticatedFetch.mockResolvedValueOnce(response({ errors: [{ message: "failure" }] }));
     await expect(fetchPullRequests()).rejects.toMatchObject({ kind: "api" });
