@@ -1,7 +1,7 @@
 import { defaultWindowIcon } from "@tauri-apps/api/app";
 import { PhysicalPosition } from "@tauri-apps/api/dpi";
 import { emit } from "@tauri-apps/api/event";
-import { Menu } from "@tauri-apps/api/menu";
+import { CheckMenuItem, Menu } from "@tauri-apps/api/menu";
 import { TrayIcon, type TrayIconEvent } from "@tauri-apps/api/tray";
 import {
   availableMonitors,
@@ -9,6 +9,11 @@ import {
   type Theme,
 } from "@tauri-apps/api/window";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import {
+  disable as disableAutostart,
+  enable as enableAutostart,
+  isEnabled as isAutostartEnabled,
+} from "@tauri-apps/plugin-autostart";
 import darkModeIconUrl from "../../src-tauri/icons/icon-dark.png?inline";
 import lightModeIconUrl from "../../src-tauri/icons/icon-light.png?inline";
 
@@ -105,6 +110,7 @@ async function togglePopup(event: TrayIconEvent) {
   await positionPopupNearTray(event.rect);
   await popupWindow.show();
   await popupWindow.setFocus();
+  await emit("popup-opened");
 }
 
 async function setupNativeShell() {
@@ -133,6 +139,50 @@ async function setupNativeShell() {
     void popupWindow.hide();
   });
 
+  let isUpdatingAutostart = false;
+  let launchAtStartupEnabled = false;
+
+  try {
+    launchAtStartupEnabled = await isAutostartEnabled();
+  } catch (error) {
+    console.error("Could not read launch at startup state.", error);
+  }
+
+  async function toggleLaunchAtStartup() {
+    if (isUpdatingAutostart) return;
+
+    isUpdatingAutostart = true;
+
+    try {
+      const wasEnabled = await isAutostartEnabled();
+
+      if (wasEnabled) {
+        await disableAutostart();
+      } else {
+        await enableAutostart();
+      }
+
+      await launchAtStartupItem.setChecked(await isAutostartEnabled());
+    } catch (error) {
+      console.error("Could not update launch at startup.", error);
+
+      try {
+        await launchAtStartupItem.setChecked(await isAutostartEnabled());
+      } catch (stateError) {
+        console.error("Could not read launch at startup state.", stateError);
+      }
+    } finally {
+      isUpdatingAutostart = false;
+    }
+  }
+
+  const launchAtStartupItem = await CheckMenuItem.new({
+    id: "launch-at-startup",
+    text: "Launch at startup",
+    checked: launchAtStartupEnabled,
+    action: () => void toggleLaunchAtStartup(),
+  });
+
   const menu = await Menu.new({
     items: [
       {
@@ -145,6 +195,8 @@ async function setupNativeShell() {
         text: "Open GitHub",
         action: () => void openUrl(GITHUB_PULLS_URL),
       },
+      { item: "Separator" },
+      launchAtStartupItem,
       { item: "Separator" },
       { item: "Quit", text: "Quit" },
     ],

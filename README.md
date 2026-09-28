@@ -27,7 +27,7 @@ Peek stays out of the way when you do not need it: there is no permanent taskbar
 - See review requests and your authored pull requests in one place.
 - Check draft, review, CI, and last-updated status without opening GitHub.
 - Open any pull request directly in your default browser.
-- Refresh, open GitHub, or quit from the tray menu.
+- Refresh, open GitHub, toggle launch at startup, or quit from the tray menu.
 - Sign in through GitHub's Device Flow; credentials are stored in Windows Credential Manager.
 
 ## Getting started
@@ -37,7 +37,7 @@ Peek stays out of the way when you do not need it: there is no permanent taskbar
 3. Find the Peek icon in the notification area. Windows may place it in the overflow menu.
 4. Click the icon and follow the GitHub sign-in instructions.
 
-Peek currently supports Windows 10 and Windows 11. Persistent PR caching, scheduled refresh, tray attention states, and launch at startup are planned for later releases.
+Peek currently supports Windows 10 and Windows 11. Pull requests refresh automatically every five minutes and when stale data is reopened. Persistent PR caching and tray attention states are planned for later releases.
 
 ## Privacy and permissions
 
