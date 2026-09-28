@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src-tauri/icons/icon-dark.png" width="96" height="96" alt="Peek logo">
+  <img src="src-tauri/icons/icon-light.png" width="96" height="96" alt="Peek logo">
 </p>
 
 <h1 align="center">Peek</h1>
